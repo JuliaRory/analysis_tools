@@ -11,4 +11,6 @@ def plot_signal(start_s, end_s, signal, s_to_idx, ch=None, plot=True):
     plt.xticks(ticks, np.arange(start_s, end_s, step_s).astype(int));
     plt.xlabel("Time [s]")
     plt.ylabel("Signal [uV]")
-    plt.show()
+    if plot:
+        plt.show()
+

@@ -1,4 +1,4 @@
-from numpy import asarray, eye, newaxis, ones, mean
+from numpy import asarray, eye, newaxis, ones, mean, integer, ndarray
 
 
 def rereference_eeg(eeg_data, ref_idx):
@@ -17,23 +17,23 @@ def rereference_eeg(eeg_data, ref_idx):
     eeg_reref : ndarray, shape (n_samples, n_channels)
         EEG signal re-referenced to the given electrode(s).
     """
-    eeg_data = np.asarray(eeg_data)
+    eeg_data = asarray(eeg_data)
     n_channels = eeg_data.shape[1]
 
     # Приводим ref_idx к массиву индексов
-    if isinstance(ref_idx, (int, np.integer)):
+    if isinstance(ref_idx, (int, integer)):
         ref_idx = [ref_idx]
-    elif isinstance(ref_idx, (list, tuple, np.ndarray)):
+    elif isinstance(ref_idx, (list, tuple, ndarray)):
         ref_idx = list(ref_idx)
     else:
         raise TypeError("ref_idx must be int or a sequence of ints.")
 
     # Проверка границ
-    for idx in ref_idx:
-        if idx < 0 or idx >= n_channels:
-            raise ValueError(
-                f"ref_idx ({idx}) is out of bounds for {n_channels} channels."
-            )
+    # for idx in ref_idx:
+    #     if idx < 0 or idx >= n_channels:
+    #         raise ValueError(
+    #             f"ref_idx ({idx}) is out of bounds for {n_channels} channels."
+    #         )
 
     # Вычисляем средний референсный сигнал
     ref_signal = eeg_data[:, ref_idx].mean(axis=1, keepdims=True)

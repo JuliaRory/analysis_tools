@@ -17,11 +17,13 @@ from src.visualization.check_alpha_rhythm import plot_spectr, plot_alpha_spectr
 
 # idx_Fz = find_ch_idx("Fz", CED_FILE)
 
-DATA_FOLDER = r".\data"
-RECORD = "01-open-closed-eyes.hdf"
+# DATA_FOLDER = r".\data"
+# RECORD = "01-open-closed-eyes.hdf"
 
-EEG_CHANNELS = np.arange(10)
-REFERENT_CHANNELS = [11, 12]    # or NONE
+DATA_FOLDER = r"R:\data\dry_gel"
+RECORD = "opened_closed_eyes.hdf"
+
+EEG_CHANNELS = np.arange(12)
 
 Fs = 1000 # Hz
 s_to_idx = lambda x: int(x * Fs)
@@ -41,7 +43,8 @@ idxs_ROA = [find_ch_idx(ch, CED_FILE) for ch in labels_ROA]
 
 plt.ion() 
 
-do_referencing = False
+do_referencing = True
+REFERENT_CHANNELS = [10, 11]    # or NONE
 
 # == load dataset ==
 
@@ -88,7 +91,9 @@ eeg_closed = signal[idx_half:, :]       # closed eyes
 freq, psd_opened = compute_psd_welch(eeg_opened, fs=Fs, fmin=0.5, fmax=40, freq_res=.5)
 freq, psd_closed = compute_psd_welch(eeg_closed, fs=Fs, fmin=0.5, fmax=40, freq_res=.5)
 
-fig = plot_alpha_spectr(freq, psd_opened[idxs_ROA], psd_closed[idxs_ROA], labels_ROA,  plot_mean=True,
+max_psd = max(np.max(psd_opened), np.max(psd_closed))
+min_psd =0
+fig = plot_alpha_spectr(freq, psd_opened[idxs_ROA], psd_closed[idxs_ROA], labels_ROA,  plot_mean=True, y_min=min_psd,  y_max=max_psd, 
                  freq_min = 0, freq_max=20, to_db=False)
 
 
@@ -101,7 +106,7 @@ fig, ax = plot_spectrogram(f, t, S,
                            symmetric=True)
 ax.axvline(idx_half / Fs, color='white')
 ax.text(20, 37, "Opened eyes", color='white', fontsize=20)
-ax.text(80, 37, "Closed eyes", color='white', fontsize=20)
+ax.text(160, 37, "Closed eyes", color='white', fontsize=20)
 
 plt.ioff()     
 plt.show()     
