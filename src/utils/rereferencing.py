@@ -1,5 +1,48 @@
 from numpy import asarray, eye, newaxis, ones, mean
 
+
+def rereference_eeg(eeg_data, ref_idx):
+    """
+    Re-reference EEG data relative to one or several reference electrodes.
+
+    Parameters
+    ----------
+    eeg_data : ndarray, shape (n_samples, n_channels)
+        Original EEG signal.
+    ref_idx : int or sequence of ints
+        Index (or indices) of reference electrode(s) (0-based).
+
+    Returns
+    -------
+    eeg_reref : ndarray, shape (n_samples, n_channels)
+        EEG signal re-referenced to the given electrode(s).
+    """
+    eeg_data = np.asarray(eeg_data)
+    n_channels = eeg_data.shape[1]
+
+    # Приводим ref_idx к массиву индексов
+    if isinstance(ref_idx, (int, np.integer)):
+        ref_idx = [ref_idx]
+    elif isinstance(ref_idx, (list, tuple, np.ndarray)):
+        ref_idx = list(ref_idx)
+    else:
+        raise TypeError("ref_idx must be int or a sequence of ints.")
+
+    # Проверка границ
+    for idx in ref_idx:
+        if idx < 0 or idx >= n_channels:
+            raise ValueError(
+                f"ref_idx ({idx}) is out of bounds for {n_channels} channels."
+            )
+
+    # Вычисляем средний референсный сигнал
+    ref_signal = eeg_data[:, ref_idx].mean(axis=1, keepdims=True)
+
+    # Вычитаем его из всех каналов
+    eeg_reref = eeg_data - ref_signal
+
+    return eeg_reref
+
 def rereference_eeg_matrix(eeg_data, ref_idx):
     """
     Re-reference EEG data relative to a specific reference electrode using a matrix.
@@ -28,7 +71,7 @@ def rereference_eeg_matrix(eeg_data, ref_idx):
     
     return eeg_reref
 
-def rereference_eeg(eeg_data, ref_idx):
+def rereference_eeg_simple(eeg_data, ref_idx):
     """
     Re-reference EEG data relative to a specific reference electrode.
 
