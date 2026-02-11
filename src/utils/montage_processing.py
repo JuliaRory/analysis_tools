@@ -20,3 +20,7 @@ def get_topo_positions(fl_montage):
     df['y'] = np.round(np.array(df.radius.values) * np.cos(th), 2)
     df['x'] = np.round(np.array(df.radius.values) * np.sin(th), 2)
     return df[['x', 'y']].values
+
+def get_good_channels(fl_montage, radius=0.54):
+    df = pd.read_csv(fl_montage, sep='\t')
+    return df.loc[df.radius <= radius]["labels"].values
