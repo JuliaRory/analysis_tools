@@ -1,6 +1,55 @@
 import numpy as np
 from scipy.linalg import eigh
 
+from sklearn.covariance import MinCovDet
+import scipy.linalg as la
+
+# ===================
+# == Анатолий-like ==
+# ===================
+
+def calculate_robust_cov(epochs):
+    """
+    epochs [n_trials, n_samples, n_channels]
+    Return:
+        cov [n_channels, n_channels]
+    """
+    data = np.concatenate(epochs, axis=0)   # [n_samples, n_channels]
+    MCD = MinCovDet(support_fraction=0.5, store_precision=False)
+    cov = MCD.fit(data)
+    return cov
+
+def calculate_CSP(c1, c2):
+    """
+    c1, c2: covariance matrix
+    Return:
+        W_fixed:        
+        projForward:    
+        evals:          
+
+    """
+    R1 = c1 / np.trace(c1)
+    R2 = c2 / np.trace(c2)
+    L, W = la.eig(R1, R1+R2)
+    order = np.argsort(L)
+    L = L[order]
+    W = W[:, order]
+    fProj = np.dot(W.T, R1).T
+    d, p = fProj.shape
+    maxind = np.argmax(np.abs(fProj), axis=0)
+    # maxinds = np.array([np.where(np.abs(W[:, i]) == np.max(np.abs(W[:, i])))[0][0] for i in range(W.shape[1])])
+    max_magnitudes = np.array([fProj[maxind[i], i] for i in range(W.shape[1])])
+    rowsign = np.sign(max_magnitudes)
+    W_fixed = W * rowsign
+    projForward = la.pinv(W_fixed).T
+    evals = L
+    return W_fixed, projForward, evals
+
+# ======================
+# == basic principles ==
+# ======================
+
+
 def cov_epoch(X):
     """
     X: (channels, time)
@@ -11,7 +60,7 @@ def cov_epoch(X):
 def regularize(C, alpha=0.05):
     return (1 - alpha) * C + alpha * np.eye(C.shape[0])
 
-def calculate_CSP(epochs_motor, epochs_rest):
+def calculate_CSP_in_trials(epochs_motor, epochs_rest):
     covs_motor = np.array([cov_epoch(ep.T) for ep in epochs_motor])  # ep: (time, ch)
     C_motor  = covs_motor.mean(axis=0)
     C_motor  = regularize(C_motor,  alpha=0.05)
